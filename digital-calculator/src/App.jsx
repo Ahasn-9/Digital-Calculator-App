@@ -23,9 +23,7 @@ function App() {
         .replace(/÷/g, '/')
         .replace(/×/g, '*')
         .replace(/−/g, '-')
-        .replace(/%/g, '/100')
-        
-      
+        .replace(/(\d+(?:\.\d+)?)%([\d.]+)/g, '($1*$2/100)');
       return eval(exp);
     } catch {
       return null;
