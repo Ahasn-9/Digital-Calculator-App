@@ -113,14 +113,14 @@ function App() {
         setShowError(true);
         setResult('');
       } else {
-        setInput(res.toString());
+        setInput('0');
         setResult(res);
         setShowError(false);
         setHistory(prev => [
-          ...prev,
-          { expression: input, result: res }
+          { expression: input, result: res },
+          ...prev
         ]);
-        setCursor(res.toString().length);
+        setCursor(1);
       }
       return;
     } else if (val === '⌫') {
