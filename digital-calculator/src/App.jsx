@@ -18,6 +18,7 @@ function App() {
   const [history, setHistory] = useState([]);
   const inputRef = useRef(null);
   const [cursor, setCursor] = useState(0);
+  const [editingHistoryIdx, setEditingHistoryIdx] = useState(null);
 
   useEffect(() => {
     const stored = sessionStorage.getItem('calc_history');
@@ -106,6 +107,7 @@ function App() {
       setResult('');
       setShowError(false);
       setCursor(0);
+      setEditingHistoryIdx(null);
       return;
     } else if (val === '=') {
       const res = safeEval(input);
@@ -116,11 +118,16 @@ function App() {
         setInput('0');
         setResult(res);
         setShowError(false);
-        setHistory(prev => [
-          { expression: input, result: res },
-          ...prev
-        ]);
+        if (editingHistoryIdx !== null) {
+          setHistory(prev => prev.map((item, idx) => idx === editingHistoryIdx ? { expression: input, result: res } : item));
+        } else {
+          setHistory(prev => [
+            { expression: input, result: res },
+            ...prev
+          ]);
+        }
         setCursor(1);
+        setEditingHistoryIdx(null);
       }
       return;
     } else if (val === '⌫') {
@@ -215,21 +222,32 @@ function App() {
                   <div className="text-gray-400 text-sm">{item.expression}</div>
                   <div className="text-white text-lg font-bold">= {item.result}</div>
                 </div>
-                <button
-                  className="ml-2 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 text-xs"
-                  onClick={() => {
-                    setInput(item.expression);
-                    setCursor(item.expression.length);
-                    setTimeout(() => {
-                      if (inputRef.current) {
-                        inputRef.current.focus();
-                        inputRef.current.setSelectionRange(item.expression.length, item.expression.length);
-                      }
-                    }, 0);
-                  }}
-                >
-                  Edit
-                </button>
+                <div className="flex flex-col gap-1 ml-2">
+                  <button
+                    className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 text-xs"
+                    onClick={() => {
+                      setInput(item.expression);
+                      setCursor(item.expression.length);
+                      setEditingHistoryIdx(idx);
+                      setTimeout(() => {
+                        if (inputRef.current) {
+                          inputRef.current.focus();
+                          inputRef.current.setSelectionRange(item.expression.length, item.expression.length);
+                        }
+                      }, 0);
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-500 text-xs"
+                    onClick={() => {
+                      setHistory(prev => prev.filter((_, i) => i !== idx));
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))
           )}
