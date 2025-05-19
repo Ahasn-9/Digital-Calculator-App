@@ -1,5 +1,5 @@
 import './App.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Button from './components/Button'
 
 const buttons = [
@@ -15,6 +15,20 @@ function App() {
   const [input, setInput] = useState('');
   const [result, setResult] = useState('');
   const [showError, setShowError] = useState(false);
+  const [history, setHistory] = useState([]);
+  const inputRef = useRef(null);
+  const [cursor, setCursor] = useState(0);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('calc_history');
+    if (stored) {
+      setHistory(JSON.parse(stored));
+    }
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('calc_history', JSON.stringify(history));
+  }, [history]);
 
   const safeEval = (expr) => {
     try {
@@ -64,19 +78,37 @@ function App() {
     const handleKeyDown = (e) => {
       if (e.key >= '0' && e.key <= '9') {
         handleClick(e.key);
+        e.preventDefault();
       } else if (keyMap[e.key]) {
         handleClick(keyMap[e.key]);
+        e.preventDefault();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   });
 
+  // Handle input change and cursor position
+  const handleInputChange = (e) => {
+    setInput(e.target.value);
+    setCursor(e.target.selectionStart);
+  };
+
+  // Handle input click or selection change
+  const handleInputSelect = (e) => {
+    setCursor(e.target.selectionStart);
+  };
+
+  // Insert or remove at cursor
   const handleClick = (val) => {
+    let newInput = input;
+    let newCursor = cursor;
     if (val === 'AC') {
       setInput('');
       setResult('');
       setShowError(false);
+      setCursor(0);
+      return;
     } else if (val === '=') {
       const res = safeEval(input);
       if (res === null || res === undefined || res === '') {
@@ -86,51 +118,95 @@ function App() {
         setInput(res.toString());
         setResult(res);
         setShowError(false);
+        setHistory(prev => [
+          ...prev,
+          { expression: input, result: res }
+        ]);
+        setCursor(res.toString().length);
       }
+      return;
     } else if (val === '⌫') {
-      setInput(input.slice(0, -1));
+      if (cursor > 0) {
+        newInput = input.slice(0, cursor - 1) + input.slice(cursor);
+        newCursor = cursor - 1;
+      }
     } else {
-      setInput(input + val);
+      newInput = input.slice(0, cursor) + val + input.slice(cursor);
+      newCursor = cursor + val.length;
     }
+    setInput(newInput);
+    setCursor(newCursor);
+    // Focus and set cursor after update
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.setSelectionRange(newCursor, newCursor);
+      }
+    }, 0);
   };
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.setSelectionRange(cursor, cursor);
+    }
+  }, [cursor]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="bg-gray-800 rounded-2xl shadow-lg p-4 w-80">
-        <div className="bg-gray-900 rounded-lg mb-4 p-4 min-h-[64px] flex flex-col items-end">
-          <input
-            type="text"
-            className="text-gray-400 text-lg min-h-[24px] bg-transparent outline-none w-full text-right"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            autoFocus
-          />
-          <div className="text-white text-2xl font-bold min-h-[32px]">
-            {showError ? 'Err' : result !== '' ? result : ''}
+      <div className="flex gap-8">
+        <div className="bg-gray-800 rounded-2xl shadow-lg p-4 w-80">
+          <div className="bg-gray-900 rounded-lg mb-4 p-4 min-h-[64px] flex flex-col items-end">
+            <input
+              ref={inputRef}
+              type="text"
+              className="text-gray-400 text-lg min-h-[24px] bg-transparent outline-none w-full text-right overflow-x-auto truncate"
+              value={input}
+              onChange={handleInputChange}
+              onClick={handleInputSelect}
+              onKeyUp={handleInputSelect}
+              autoFocus
+            />
+            <div className="text-white text-2xl font-bold min-h-[32px] w-full text-right overflow-x-auto truncate">
+              {showError ? 'Err' : result !== '' ? result : ''}
+            </div>
+          </div>
+          <div>
+            {buttons.map((row, i) => (
+              <div key={i} className="flex justify-center">
+                {row.map((btn) => (
+                  <Button
+                    key={btn}
+                    onClick={() => handleClick(btn)}
+                    className={
+                      btn === 'AC'
+                        ? 'bg-purple-700 hover:bg-purple-600'
+                        : btn === '='
+                        ? 'bg-blue-700 hover:bg-blue-600'
+                        : btn === '⌫'
+                        ? 'bg-gray-500 hover:bg-gray-400'
+                        : ''
+                    }
+                  >
+                    {btn}
+                  </Button>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
-        <div>
-          {buttons.map((row, i) => (
-            <div key={i} className="flex justify-center">
-              {row.map((btn) => (
-                <Button
-                  key={btn}
-                  onClick={() => handleClick(btn)}
-                  className={
-                    btn === 'AC'
-                      ? 'bg-purple-700 hover:bg-purple-600'
-                      : btn === '='
-                      ? 'bg-blue-700 hover:bg-blue-600'
-                      : btn === '⌫'
-                      ? 'bg-gray-500 hover:bg-gray-400'
-                      : ''
-                  }
-                >
-                  {btn}
-                </Button>
-              ))}
-            </div>
-          ))}
+        {/* History Panel */}
+        <div className="bg-gray-800 rounded-2xl shadow-lg p-4 w-72 h-[500px] overflow-y-auto flex flex-col">
+          <div className="text-white text-xl font-bold mb-4">History</div>
+          {history.length === 0 ? (
+            <div className="text-gray-400">No history yet.</div>
+          ) : (
+            history.map((item, idx) => (
+              <div key={idx} className="mb-2 p-2 bg-gray-900 rounded">
+                <div className="text-gray-400 text-sm">{item.expression}</div>
+                <div className="text-white text-lg font-bold">= {item.result}</div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
