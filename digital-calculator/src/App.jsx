@@ -98,7 +98,13 @@ function App() {
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
       <div className="bg-gray-800 rounded-2xl shadow-lg p-4 w-80">
         <div className="bg-gray-900 rounded-lg mb-4 p-4 min-h-[64px] flex flex-col items-end">
-          <div className="text-gray-400 text-lg min-h-[24px]">{input || '0'}</div>
+          <input
+            type="text"
+            className="text-gray-400 text-lg min-h-[24px] bg-transparent outline-none w-full text-right"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            autoFocus
+          />
           <div className="text-white text-2xl font-bold min-h-[32px]">
             {showError ? 'Err' : result !== '' ? result : ''}
           </div>
