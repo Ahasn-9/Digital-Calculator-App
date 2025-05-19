@@ -197,9 +197,26 @@ function App() {
             <div className="text-gray-400">No history yet.</div>
           ) : (
             history.map((item, idx) => (
-              <div key={idx} className="mb-2 p-2 bg-gray-900 rounded">
-                <div className="text-gray-400 text-sm">{item.expression}</div>
-                <div className="text-white text-lg font-bold">= {item.result}</div>
+              <div key={idx} className="mb-2 p-2 bg-gray-900 rounded flex items-center justify-between">
+                <div>
+                  <div className="text-gray-400 text-sm">{item.expression}</div>
+                  <div className="text-white text-lg font-bold">= {item.result}</div>
+                </div>
+                <button
+                  className="ml-2 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 text-xs"
+                  onClick={() => {
+                    setInput(item.expression);
+                    setCursor(item.expression.length);
+                    setTimeout(() => {
+                      if (inputRef.current) {
+                        inputRef.current.focus();
+                        inputRef.current.setSelectionRange(item.expression.length, item.expression.length);
+                      }
+                    }, 0);
+                  }}
+                >
+                  Edit
+                </button>
               </div>
             ))
           )}
