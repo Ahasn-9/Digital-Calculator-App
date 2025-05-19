@@ -16,7 +16,7 @@ function App() {
   const [result, setResult] = useState('');
   const [showError, setShowError] = useState(false);
 
-  // Helper to safely evaluate expressions
+ 
   const safeEval = (expr) => {
     try {
       let exp = expr
@@ -24,8 +24,8 @@ function App() {
         .replace(/×/g, '*')
         .replace(/−/g, '-')
         .replace(/%/g, '/100')
+        
       
-      // eslint-disable-next-line no-eval
       return eval(exp);
     } catch {
       return null;
@@ -33,7 +33,7 @@ function App() {
   };
 
 
-  // Real-time update result
+ 
   useEffect(() => {
     if (input) {
       const res = safeEval(input);
@@ -49,7 +49,7 @@ function App() {
     }
   }, [input]);
 
-  // Handle button click
+ 
   const handleClick = (val) => {
     if (val === 'AC') {
       setInput('');
@@ -57,7 +57,7 @@ function App() {
       setShowError(false);
     } else if (val === '=') {
       const res = safeEval(input);
-      if ( res === undefined || res === '') {
+      if (res === null || res === undefined || res === '') {
         setShowError(true);
         setResult('');
       } else {
@@ -76,7 +76,7 @@ function App() {
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
       <div className="bg-gray-800 rounded-2xl shadow-lg p-4 w-80">
         <div className="bg-gray-900 rounded-lg mb-4 p-4 min-h-[64px] flex flex-col items-end">
-          <div className="text-gray-400 text-lg min-h-[24px]">{input || ''}</div>
+          <div className="text-gray-400 text-lg min-h-[24px]">{input || '0'}</div>
           <div className="text-white text-2xl font-bold min-h-[32px]">
             {showError ? 'Err' : result !== '' ? result : ''}
           </div>
