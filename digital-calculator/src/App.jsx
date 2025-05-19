@@ -16,7 +16,6 @@ function App() {
   const [result, setResult] = useState('');
   const [showError, setShowError] = useState(false);
 
- 
   const safeEval = (expr) => {
     try {
       let exp = expr
@@ -24,14 +23,13 @@ function App() {
         .replace(/×/g, '*')
         .replace(/−/g, '-')
         .replace(/(\d+(?:\.\d+)?)%([\d.]+)/g, '($1*$2/100)');
+      exp = exp.replace(/\b0+(\d+)/g, '$1');
       return eval(exp);
     } catch {
       return null;
     }
   };
 
-
- 
   useEffect(() => {
     if (input) {
       const res = safeEval(input);
@@ -47,7 +45,33 @@ function App() {
     }
   }, [input]);
 
- 
+  useEffect(() => {
+    const keyMap = {
+      '/': '÷',
+      '*': '×',
+      '-': '−',
+      '+': '+',
+      '%': '%',
+      '(': '(',
+      ')': ')',
+      '.': '.',
+      Enter: '=',
+      '=': '=',
+      Backspace: '⌫',
+      Escape: 'AC',
+      Delete: 'AC',
+    };
+    const handleKeyDown = (e) => {
+      if (e.key >= '0' && e.key <= '9') {
+        handleClick(e.key);
+      } else if (keyMap[e.key]) {
+        handleClick(keyMap[e.key]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
+
   const handleClick = (val) => {
     if (val === 'AC') {
       setInput('');
