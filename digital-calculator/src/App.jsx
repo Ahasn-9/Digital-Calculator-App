@@ -192,7 +192,20 @@ function App() {
           </div>
         </div>
         <div className="bg-gray-800 rounded-2xl shadow-lg p-4 w-72 h-[500px] overflow-y-auto flex flex-col">
-          <div className="text-white text-xl font-bold mb-4">History</div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-white text-xl font-bold">History</div>
+            {history.length > 0 && (
+              <button
+                className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-500 text-sm"
+                onClick={() => {
+                  setHistory([]);
+                  sessionStorage.setItem('calc_history', JSON.stringify([]));
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
           {history.length === 0 ? (
             <div className="text-gray-400">No history yet.</div>
           ) : (
