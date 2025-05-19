@@ -88,18 +88,16 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   });
 
-  // Handle input change and cursor position
   const handleInputChange = (e) => {
     setInput(e.target.value);
     setCursor(e.target.selectionStart);
   };
 
-  // Handle input click or selection change
+
   const handleInputSelect = (e) => {
     setCursor(e.target.selectionStart);
   };
 
-  // Insert or remove at cursor
   const handleClick = (val) => {
     let newInput = input;
     let newCursor = cursor;
@@ -136,7 +134,6 @@ function App() {
     }
     setInput(newInput);
     setCursor(newCursor);
-    // Focus and set cursor after update
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
@@ -194,7 +191,6 @@ function App() {
             ))}
           </div>
         </div>
-        {/* History Panel */}
         <div className="bg-gray-800 rounded-2xl shadow-lg p-4 w-72 h-[500px] overflow-y-auto flex flex-col">
           <div className="text-white text-xl font-bold mb-4">History</div>
           {history.length === 0 ? (

@@ -1,4 +1,4 @@
-// Reusable calculator button component
+
 export default function Button({ children, onClick, className = '' }) {
   return (
     <button
