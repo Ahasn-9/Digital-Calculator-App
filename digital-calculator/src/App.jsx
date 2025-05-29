@@ -30,7 +30,7 @@ function App() {
   useEffect(() => {
     sessionStorage.setItem('calc_history', JSON.stringify(history));
   }, [history]);
-
+// regex
   const safeEval = (expr) => {
     try {
       let exp = expr
